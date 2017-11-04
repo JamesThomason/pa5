@@ -131,10 +131,12 @@ def search(graph, state, is_goal, limit, heuristic):
     # representing the path. Each element (tuple) of the list represents a state
     # in the path and the action that took you to this state
     queue = []
+    tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
     queue.append((0, state, 1))
     while time() - start_time < limit:
         if not queue:
-            pass
+            print("Queue Empty!")
+            break
         else:
             dist, currentState, turn = heappop(queue)
             print(currentState)
@@ -149,8 +151,11 @@ def search(graph, state, is_goal, limit, heuristic):
                 if not name:
                     break
                 for material in nextState.keys():
-                    if nextState[material]>8:
+                    if nextState[material]>16:
                         move=False
+                    for tool in tools:
+                        if tool in nextState.keys() and nextState[tool]>1:
+                            move=False
                 if move:
                     heappush(queue, (cost+dist,nextState,turn+1))
                     print ("Possible action: " + name)
