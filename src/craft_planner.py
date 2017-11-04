@@ -72,7 +72,7 @@ def make_effector(rule):
         # Tip: Do something with rule['Produces'] and rule['Consumes'].
         next_state = state.copy()
         #put the key-value pairs of Produces and Consumes in a single dict
-        products = rule["Produces"]
+        products = rule["Produces"].copy()
         #get updated values for each item in Produces
         for product in products:
             products[product] += state[product]
@@ -80,7 +80,7 @@ def make_effector(rule):
         next_state.update(products)
         #repeat for Consumes
         if "Consumes" in rule:
-            costs = rule["Consumes"]
+            costs = rule["Consumes"].copy()
             for cost in costs:
                 costs[cost] = state[cost]-costs[cost]
             next_state.update(costs)
@@ -132,7 +132,7 @@ def search(graph, state, is_goal, limit, heuristic):
     # in the path and the action that took you to this state
     queue = []
     tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
-    queue.append((0, state, 1))
+    queue.append((0, state, 0))
     while time() - start_time < limit:
         if not queue:
             print("Queue Empty!")
@@ -143,6 +143,7 @@ def search(graph, state, is_goal, limit, heuristic):
             print("turn:",turn)
             if is_goal(currentState):
                 print('found')
+                print (dist)
                 return True
             #get adjacent states
             for i in graph(currentState):
@@ -201,7 +202,7 @@ if __name__ == '__main__':
     state.update(Crafting['Initial'])
 
     # Search for a solution
-    resulting_plan = search(graph, state, is_goal, 5, heuristic)
+    resulting_plan = search(graph, state, is_goal, 30, heuristic)
 
     if resulting_plan:
         print ("Found the goal")
