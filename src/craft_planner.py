@@ -1,6 +1,7 @@
 import json
 from collections import namedtuple, defaultdict, OrderedDict
 from timeit import default_timer as time
+from heapq import heappop, heappush
 
 Recipe = namedtuple('Recipe', ['name', 'check', 'effect', 'cost'])
 
@@ -43,17 +44,19 @@ def make_checker(rule):
         # This code is called by graph(state) and runs millions of times.
         # Tip: Do something with rule['Consumes'] and rule['Requires'].
         #if the state has the required materials for consumes and the required tools in requires
-        materials = rule["Consumes"].keys()
-        tools = rule["Requires"].keys()
-        for material in materials:
-            if state[material] < rule["Consumes"][material]:
-                b = False
-                break
-        if b:
-            for tool in tools:
-                if not state[tool]:
+        if "Consumes" in rule:
+            materials = rule["Consumes"].keys()
+            for material in materials:
+                if state[material] < rule["Consumes"][material]:
                     b = False
                     break
+        if "Requires" in rule:
+            tools = rule["Requires"].keys()
+            if b:
+                for tool in tools:
+                    if state[tool] <= 0:
+                        b = False
+                        break
         return b
 
     return check
@@ -76,10 +79,11 @@ def make_effector(rule):
         #update next_state to reflect those changes
         next_state.update(products)
         #repeat for Consumes
-        costs = rule["Costs"]
-        for cost in costs:
-            costs[cost] = state[cost]-costs[cost]
-        next_state.update(costs)
+        if "Consumes" in rule:
+            costs = rule["Consumes"]
+            for cost in costs:
+                costs[cost] = state[cost]-costs[cost]
+            next_state.update(costs)
         return next_state
 
     return effect
@@ -126,8 +130,24 @@ def search(graph, state, is_goal, limit, heuristic):
     # When you find a path to the goal return a list of tuples [(state, action)]
     # representing the path. Each element (tuple) of the list represents a state
     # in the path and the action that took you to this state
+    queue = []
+    queue.append((0, state))
     while time() - start_time < limit:
-        pass
+        if not queue:
+            pass
+        else:
+            dist, currentState = heappop(queue)
+            print(currentState)
+            if is_goal(currentState):
+                return True
+            #get adjacent states
+            for i in graph(currentState):
+                name, nextState, cost = i
+                if not name:
+                    break
+                heappush(queue, (cost,nextState))
+                print ("Possible action: " + name)
+
 
     # Failed to find a path
     print(time() - start_time, 'seconds.')
@@ -166,10 +186,11 @@ if __name__ == '__main__':
     state.update(Crafting['Initial'])
 
     # Search for a solution
-    resulting_plan = search(graph, state, is_goal, 5, heuristic)
+    resulting_plan = search(graph, state, is_goal, 1, heuristic)
 
     if resulting_plan:
+        print ("Found the goal")
         # Print resulting plan
-        for state, action in resulting_plan:
+        """for state, action in resulting_plan:
             print('\t',state)
-            print(action)
+            print(action)"""
