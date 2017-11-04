@@ -152,8 +152,11 @@ def search(graph, state, is_goal, limit, heuristic):
                     if nextState[material]>8:
                         move=False
                 if move:
-                    heappush(queue, (cost,nextState,turn+1))
+                    heappush(queue, (cost+dist,nextState,turn+1))
                     print ("Possible action: " + name)
+                    print ("effect on inventory")
+                    print (nextState)
+            print ("")
 
 
     # Failed to find a path
