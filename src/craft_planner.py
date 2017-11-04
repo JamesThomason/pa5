@@ -131,22 +131,29 @@ def search(graph, state, is_goal, limit, heuristic):
     # representing the path. Each element (tuple) of the list represents a state
     # in the path and the action that took you to this state
     queue = []
-    queue.append((0, state))
+    queue.append((0, state, 1))
     while time() - start_time < limit:
         if not queue:
             pass
         else:
-            dist, currentState = heappop(queue)
+            dist, currentState, turn = heappop(queue)
             print(currentState)
+            print("turn:",turn)
             if is_goal(currentState):
+                print('found')
                 return True
             #get adjacent states
             for i in graph(currentState):
+                move=True
                 name, nextState, cost = i
                 if not name:
                     break
-                heappush(queue, (cost,nextState))
-                print ("Possible action: " + name)
+                for material in nextState.keys():
+                    if nextState[material]>8:
+                        move=False
+                if move:
+                    heappush(queue, (cost,nextState,turn+1))
+                    print ("Possible action: " + name)
 
 
     # Failed to find a path
@@ -186,7 +193,7 @@ if __name__ == '__main__':
     state.update(Crafting['Initial'])
 
     # Search for a solution
-    resulting_plan = search(graph, state, is_goal, 1, heuristic)
+    resulting_plan = search(graph, state, is_goal, 5, heuristic)
 
     if resulting_plan:
         print ("Found the goal")
