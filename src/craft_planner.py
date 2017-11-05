@@ -117,10 +117,16 @@ def graph(state):
         if r.check(state):
             yield (r.name, r.effect(state), r.cost)
 
-
-def heuristic(state):
-    # Implement your heuristic here!
-    return 0
+def make_heuristic(goal):
+    # Makes the heuristic function to prioritize the goal if it's the next move
+    
+    def heuristic(state):
+        # Implement your heuristic here!
+        if is_goal(state):
+            return -100
+        return 0
+    
+    return heuristic
 
 def search(graph, state, is_goal, limit, heuristic):
 
@@ -130,6 +136,7 @@ def search(graph, state, is_goal, limit, heuristic):
     # When you find a path to the goal return a list of tuples [(state, action)]
     # representing the path. Each element (tuple) of the list represents a state
     # in the path and the action that took you to this state
+    in_game_time=0
     queue = []
     tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
     queue.append((0, state, 0))
@@ -141,6 +148,7 @@ def search(graph, state, is_goal, limit, heuristic):
             dist, currentState, turn = heappop(queue)
             print(currentState)
             print("turn:",turn)
+            queue=[]
             if is_goal(currentState):
                 print('found')
                 print (dist)
@@ -152,13 +160,13 @@ def search(graph, state, is_goal, limit, heuristic):
                 if not name:
                     break
                 for material in nextState.keys():
-                    if nextState[material]>16:
+                    if nextState[material]>25:
                         move=False
                     for tool in tools:
                         if tool in nextState.keys() and nextState[tool]>1:
                             move=False
                 if move:
-                    heappush(queue, (cost+dist,nextState,turn+1))
+                    heappush(queue, (cost+dist+heuristic(nextState),nextState,turn+1))
                     print ("Possible action: " + name)
                     print ("effect on inventory")
                     print (nextState)
@@ -201,6 +209,9 @@ if __name__ == '__main__':
     state = State({key: 0 for key in Crafting['Items']})
     state.update(Crafting['Initial'])
 
+    # Makes heuristic
+    heuristic = make_heuristic(Crafting['Goal'])
+    
     # Search for a solution
     resulting_plan = search(graph, state, is_goal, 30, heuristic)
 
