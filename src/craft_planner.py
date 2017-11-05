@@ -140,14 +140,15 @@ def search(graph, state, is_goal, limit, heuristic):
     queue = []
     parentState = {}        #binds a state to its parent state and action required to reach that state
     tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
-    queue.append((0, state, 0))
     parentState[state]=None
+    queue.append((0, state, 0, 0))
     while time() - start_time < limit:
         if not queue:
             print("Queue Empty!")
             break
         else:
-            dist, currentState, turn = heappop(queue)
+            dist, currentState, turn, game_time = heappop(queue)
+            in_game_time+=game_time
             print(currentState)
             print("turn:",turn)
             queue=[]
@@ -155,13 +156,17 @@ def search(graph, state, is_goal, limit, heuristic):
                 #print('found')
                 #print (dist)
                 print ("Compute Time: " + str(time()))
-                print ("Game Time: {cost = " + str(dist) + "} {len = " + str(turn) + "}")
+                print ("Game Time: {cost = " + str(in_game_time) + "} {len = " + str(turn) + "}")
                 path = []
                 path.append(( currentState, "End of Path") )
                 while parentState[currentState] != None:
                     path.append(parentState[currentState])
                     currentState = parentState[currentState][0]
                 return path
+
+                print('found')
+                print("Game Time:", in_game_time)
+                return True
             #get adjacent states
             for i in graph(currentState):
                 move=True
@@ -169,7 +174,7 @@ def search(graph, state, is_goal, limit, heuristic):
                 if not name:
                     break
                 for material in nextState.keys():
-                    if nextState[material]>25:
+                    if nextState[material]>6:
                         move=False
                     for tool in tools:
                         if tool in nextState.keys() and nextState[tool]>1:
@@ -178,7 +183,7 @@ def search(graph, state, is_goal, limit, heuristic):
                     #heappush(queue, (cost+dist,nextState,turn+1))
                     parentState[nextState] = (currentState, name)
                     print ("Possible action: " + name)
-                    heappush(queue, (cost+dist+heuristic(nextState),nextState,turn+1))
+                    heappush(queue, (cost+dist+heuristic(nextState), nextState, turn+1, cost))
                     print ("Possible action: " + name)
                     print ("effect on inventory")
                     print (nextState)
@@ -220,10 +225,14 @@ if __name__ == '__main__':
     # Initialize first state from initial inventory
     state = State({key: 0 for key in Crafting['Items']})
     state.update(Crafting['Initial'])
+    
+    materials=['coal', 'ore', 'wood', 'cobble']
+    resources=['cart', 'ingot', 'plank', 'rail', 'stick']
+    tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
 
     # Makes heuristic
     heuristic = make_heuristic(Crafting['Goal'])
-    
+   
     # Search for a solution
     resulting_plan = search(graph, state, is_goal, 30, heuristic)
 
