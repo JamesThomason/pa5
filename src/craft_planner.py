@@ -131,8 +131,10 @@ def search(graph, state, is_goal, limit, heuristic):
     # representing the path. Each element (tuple) of the list represents a state
     # in the path and the action that took you to this state
     queue = []
+    parentState = {}        #binds a state to its parent state and action required to reach that state
     tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
     queue.append((0, state, 0))
+    parentState[state]=None
     while time() - start_time < limit:
         if not queue:
             print("Queue Empty!")
@@ -142,9 +144,16 @@ def search(graph, state, is_goal, limit, heuristic):
             print(currentState)
             print("turn:",turn)
             if is_goal(currentState):
-                print('found')
-                print (dist)
-                return True
+                #print('found')
+                #print (dist)
+                print ("Compute Time: " + str(time()))
+                print ("Game Time: {cost = " + str(dist) + "} {len = " + str(turn) + "}")
+                path = []
+                path.append(( currentState, "End of Path") )
+                while parentState[currentState] != None:
+                    path.append(parentState[currentState])
+                    currentState = parentState[currentState][0]
+                return path
             #get adjacent states
             for i in graph(currentState):
                 move=True
@@ -159,10 +168,11 @@ def search(graph, state, is_goal, limit, heuristic):
                             move=False
                 if move:
                     heappush(queue, (cost+dist,nextState,turn+1))
-                    print ("Possible action: " + name)
+                    parentState[nextState] = (currentState, name)
+                    """ print ("Possible action: " + name)
                     print ("effect on inventory")
-                    print (nextState)
-            print ("")
+                    print (nextState)"""
+            #print ("")
 
 
     # Failed to find a path
@@ -207,6 +217,6 @@ if __name__ == '__main__':
     if resulting_plan:
         print ("Found the goal")
         # Print resulting plan
-        """for state, action in resulting_plan:
+        for state, action in resulting_plan:
             print('\t',state)
-            print(action)"""
+            print(action)
