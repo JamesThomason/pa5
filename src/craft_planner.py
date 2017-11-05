@@ -139,19 +139,20 @@ def search(graph, state, is_goal, limit, heuristic):
     in_game_time=0
     queue = []
     tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
-    queue.append((0, state, 0))
+    queue.append((0, state, 0, 0))
     while time() - start_time < limit:
         if not queue:
             print("Queue Empty!")
             break
         else:
-            dist, currentState, turn = heappop(queue)
+            dist, currentState, turn, game_time = heappop(queue)
+            in_game_time+=game_time
             print(currentState)
             print("turn:",turn)
             queue=[]
             if is_goal(currentState):
                 print('found')
-                print (dist)
+                print("Game Time:", in_game_time)
                 return True
             #get adjacent states
             for i in graph(currentState):
@@ -160,13 +161,13 @@ def search(graph, state, is_goal, limit, heuristic):
                 if not name:
                     break
                 for material in nextState.keys():
-                    if nextState[material]>25:
+                    if nextState[material]>6:
                         move=False
                     for tool in tools:
                         if tool in nextState.keys() and nextState[tool]>1:
                             move=False
                 if move:
-                    heappush(queue, (cost+dist+heuristic(nextState),nextState,turn+1))
+                    heappush(queue, (cost+dist+heuristic(nextState), nextState, turn+1, cost))
                     print ("Possible action: " + name)
                     print ("effect on inventory")
                     print (nextState)
@@ -208,10 +209,14 @@ if __name__ == '__main__':
     # Initialize first state from initial inventory
     state = State({key: 0 for key in Crafting['Items']})
     state.update(Crafting['Initial'])
+    
+    materials=['coal', 'ore', 'wood', 'cobble']
+    resources=['cart', 'ingot', 'plank', 'rail', 'stick']
+    tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
 
     # Makes heuristic
     heuristic = make_heuristic(Crafting['Goal'])
-    
+   
     # Search for a solution
     resulting_plan = search(graph, state, is_goal, 30, heuristic)
 
