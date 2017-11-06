@@ -128,6 +128,22 @@ def make_heuristic(goal):
     
     return heuristic
 
+def sub_heuristic(state, subgoal):
+    #assume the goal will be met
+    b = True
+    #determine the conditions for a goal state
+    items = subgoal.keys()
+    #check each condition
+    for item in items:
+    #if a condition is broken, stop checking and return 0
+        if state[item] < subgoal[item]:
+            b = False
+            break
+    if b:
+        return -100
+    return 0
+        
+
 def search(graph, state, is_goal, limit, heuristic):
 
     start_time = time()
@@ -160,13 +176,9 @@ def search(graph, state, is_goal, limit, heuristic):
                 path = []
                 path.append(( currentState, "End of Path") )
                 while parentState[currentState] != None:
-                    path.append(parentState[currentState])
+                    path.insert(0,parentState[currentState])
                     currentState = parentState[currentState][0]
                 return path
-
-                print('found')
-                print("Game Time:", in_game_time)
-                return True
             #get adjacent states
             for i in graph(currentState):
                 move=True
@@ -174,7 +186,7 @@ def search(graph, state, is_goal, limit, heuristic):
                 if not name:
                     break
                 for material in nextState.keys():
-                    if nextState[material]>6:
+                    if nextState[material]>8:
                         move=False
                     for tool in tools:
                         if tool in nextState.keys() and nextState[tool]>1:
@@ -182,7 +194,11 @@ def search(graph, state, is_goal, limit, heuristic):
                 if move:
                     #heappush(queue, (cost+dist,nextState,turn+1))
                     parentState[nextState] = (currentState, name)
-                    print ("Possible action: " + name)
+                    for j in graph(nextState):
+                        nextName, nnextState, nextCost=j
+                        if heuristic(nnextState)!=0:
+                            print("trigger")
+                            heappush(queue, (cost+dist+heuristic(nnextState)-50, nextState, turn+1, cost))
                     heappush(queue, (cost+dist+heuristic(nextState), nextState, turn+1, cost))
                     print ("Possible action: " + name)
                     print ("effect on inventory")
@@ -232,12 +248,15 @@ if __name__ == '__main__':
 
     # Makes heuristic
     heuristic = make_heuristic(Crafting['Goal'])
-   
+
+    shopping_cart={}
+
+    
+    
     # Search for a solution
     resulting_plan = search(graph, state, is_goal, 30, heuristic)
 
     if resulting_plan:
-        print ("Found the goal")
         # Print resulting plan
         for state, action in resulting_plan:
             print('\t',state)
