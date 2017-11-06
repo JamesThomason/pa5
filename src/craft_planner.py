@@ -4,7 +4,14 @@ from timeit import default_timer as time
 from heapq import heappop, heappush
 
 Recipe = namedtuple('Recipe', ['name', 'check', 'effect', 'cost'])
+resources=['wood', 'cobble', 'coal', 'ore']
+materials=['plank', 'ingot', 'stick', 'cart', 'rail']
+tools = ["bench", "wooden_axe", "wooden_pickaxe", "stone_axe", "stone_pickaxe", "furnace", "iron_axe", "iron_pickaxe"]
+ShoppingList = {}
 
+def make_shopping_list(goal):
+
+    return None
 
 class State(OrderedDict):
     """ This class is a thin wrapper around an OrderedDict, which is simply a dictionary which keeps the order in
@@ -215,6 +222,14 @@ if __name__ == '__main__':
     with open('Crafting.json') as f:
         Crafting = json.load(f)
 
+    #initialize shopping list
+    order = tools.copy()
+    order.extend(resources)
+    order.extend(materials)
+
+    ShoppingList = {key: 0 for key in order}
+    print (ShoppingList)
+
     # # List of items that can be in your inventory:
     # print('All items:', Crafting['Items'])
     #
@@ -240,11 +255,8 @@ if __name__ == '__main__':
 
     # Initialize first state from initial inventory
     state = State({key: 0 for key in Crafting['Items']})
+
     state.update(Crafting['Initial'])
-    
-    materials=['coal', 'ore', 'wood', 'cobble']
-    resources=['cart', 'ingot', 'plank', 'rail', 'stick']
-    tools = ["bench", "furnace", "iron_axe", "iron_pickaxe", "stone_axe", "stone_pickaxe", "wooden_axe", "wooden_pickaxe"]
 
     # Makes heuristic
     heuristic = make_heuristic(Crafting['Goal'])
