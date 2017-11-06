@@ -4,14 +4,11 @@ from timeit import default_timer as time
 from heapq import heappop, heappush
 
 Recipe = namedtuple('Recipe', ['name', 'check', 'effect', 'cost'])
+Rules = []
 resources=['wood', 'cobble', 'coal', 'ore']
 materials=['plank', 'ingot', 'stick', 'cart', 'rail']
 tools = ["bench", "wooden_axe", "wooden_pickaxe", "stone_axe", "stone_pickaxe", "furnace", "iron_axe", "iron_pickaxe"]
 ShoppingList = {}
-
-def make_shopping_list(goal):
-
-    return None
 
 class State(OrderedDict):
     """ This class is a thin wrapper around an OrderedDict, which is simply a dictionary which keeps the order in
@@ -229,6 +226,7 @@ if __name__ == '__main__':
     # Build rules
     all_recipes = []
     for name, rule in Crafting['Recipes'].items():
+        Rules.append(rule)
         checker = make_checker(rule)
         effector = make_effector(rule)
         recipe = Recipe(name, checker, effector, rule['Time'])
