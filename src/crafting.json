@@ -2,8 +2,14 @@
   "Initial": {
   },
  "Goal": {
+<<<<<<< HEAD
   "cart": 1,
   "rail":  20
+=======
+   "cart": 2,
+   "rail": 32,
+   "iron_axe": 1
+>>>>>>> ac84ac9143b894b0a0019352222702e9e6c2cb7e
  },
  "Items": [
    "bench",
