@@ -7,11 +7,6 @@ Recipe = namedtuple('Recipe', ['name', 'check', 'effect', 'cost'])
 resources=['wood', 'cobble', 'coal', 'ore']
 materials=['plank', 'ingot', 'stick', 'cart', 'rail']
 tools = ["bench", "wooden_axe", "wooden_pickaxe", "stone_axe", "stone_pickaxe", "furnace", "iron_axe", "iron_pickaxe"]
-ShoppingList = {}
-
-def make_shopping_list(goal):
-
-    return None
 
 class State(OrderedDict):
     """ This class is a thin wrapper around an OrderedDict, which is simply a dictionary which keeps the order in
@@ -129,9 +124,17 @@ def make_heuristic(goal):
     
     def heuristic(state):
         # Implement your heuristic here!
+        reduction = 0
+        if "iron_pickaxe" in goal.keys():
+            if state["furnace"] > 0:
+                reduction -= 90
+            if state["ingot"] > 1:
+                reduction -= 10
+            if state["ore"] > 1:
+                reduction -= 10
         if is_goal(state):
-            return -100
-        return 0
+            return reduction-1000
+        return reduction
     
     return heuristic
 
@@ -179,8 +182,6 @@ def search(graph, state, is_goal, limit, heuristic):
             print(curr_dist)
             print("turn:",turn)
             if is_goal(currentState):
-                #print('found')
-                #print (dist)
                 print ("Compute Time: " + str(time()))
                 print ("Game Time: {cost = " + str(distances[currentState]) + "} {len = " + str(turn) + "}")
                 path = []
@@ -208,12 +209,6 @@ def search(graph, state, is_goal, limit, heuristic):
                         parentState[nextState]=(currentState, name)
                         adjusted_cost = pathcost+ heuristic(nextState)
                         heappush(queue, (adjusted_cost, nextState, turn+1, cost))
-                    #heappush(queue, (cost+dist,nextState,turn+1))
-                    #parentState[nextState] = (currentState, name)
-                   # heappush(queue, (cost+dist+heuristic(nextState), nextState, turn+1, cost))
-                    #print ("Possible action: " + name)
-                    #print ("effect on inventory")
-                    #print (nextState)
             print ("")
 
 
@@ -264,18 +259,9 @@ if __name__ == '__main__':
 
     # Makes heuristic
     heuristic = make_heuristic(Crafting['Goal'])
-
-    shopping_cart={}
-    goal_copy=Crafting['Goal'].copy()
-
-    """while any(key in goal_copy.keys() not in tools and key in goal_copy.keys() not in resources):
-        for item in goal_copy.keys():
-            if item not in tools and item not in resources:
-                shopping_cart[item]+=goal_copy[item]
-                if """
     
     # Search for a solution
-    resulting_plan = search(graph, state, is_goal, 30, heuristic)
+    resulting_plan = search(graph, state, is_goal, 210, heuristic)
 
     if resulting_plan:
         # Print resulting plan
